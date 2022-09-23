@@ -98,13 +98,15 @@ def ik(x, y, z):
     r33 = EE[3, 3]
 
     B1 = np.ones([3, 4])*1j
+    M2 = np.ones([3, 4])*1j
     if len(ind) != 0:
         B1_1_temp1 = []
         B1_1_temp2 = []
         B1_1_temp3 = []
         B1_2_temp1 = []
         B1_2_temp2 = []
-        B1_2_temp3 = []
+        B1_2_temp3, B1_3_temp5 = [], []
+        B1_3_temp1, B1_3_temp2, B1_3_temp3, B1_3_temp4, B1_3_temp6, B1_3_temp7 = [], [], [], [], [], []
         Y1 = []
         for i in range(len(ind)):
             Y1.append(-r13*math.sin(theta[0, ind[i]]
@@ -112,19 +114,49 @@ def ik(x, y, z):
             B1_1_temp1.append(r13*math.cos(theta[0, ind[i]]))
             B1_1_temp2.append(r23*math.sin(theta[0, ind[i]]))
             B1_1_temp3.append(r33*s23[i])
-            B1_2_temp1.append(1-(r13*math.cos(theta[0, ind[i]])))
+            B1_2_temp1.append(r13*math.cos(theta[0, ind[i]]))
             B1_2_temp2.append(r23*math.sin(theta[0, ind[i]]))
             B1_2_temp3.append(r33*c23[i])
+            B1_3_temp5.append(r33*c23[i])
+            B1_3_temp1.append(r12*math.cos(theta[0, ind[i]]))
+            B1_3_temp2.append(r22*math.sin(theta[0, ind[i]]))
+            B1_3_temp3.append(r32*c23[i])
+            B1_3_temp4.append(r11*math.cos(theta[0, ind[i]]))
+            B1_3_temp6.append(r21*math.sin(theta[0, ind[i]]))
+            B1_3_temp7.append(r31*c23[i])
+
         X1 = np.multiply(B1_1_temp1, c23) + \
             np.multiply(B1_1_temp2, c23)-B1_1_temp3
-        Y2 = 1-np.multiply(B1_2_temp1, s23) + \
+        Y2 = np.multiply(B1_2_temp1, s23) + \
             np.multiply(B1_2_temp2, s23)+B1_2_temp3
         Y2 = np.power(Y2, 2)
-        Y2 = math.sqrt(Y2)  # day xuong dươi
-        print(Y2)
+        X2 = - np.multiply(B1_1_temp1, s23) - r21 + \
+            np.multiply(B1_1_temp2, s23) + B1_3_temp5
+
+        Y3 = np.multiply(B1_3_temp1, s23) + \
+            np.multiply(B1_3_temp2, s23) + B1_3_temp3
+        X3 = - np.multiply(B1_3_temp4, s23) - \
+            np.multiply(B1_3_temp6, s23) - B1_3_temp7
         for i in range(len(ind)):
             B1[0, ind[i]] = math.atan2(Y1[i], X1[i])
-
+            B1[1, ind[i]] = math.atan2(math.sqrt(1 - Y2[i]), X2[i])
+            B1[2, ind[i]] = math.atan2(Y3[i], X3[i])
+    for i in range(np.shape(B1)[1]):
+        M2[0, i] = B1[0, i]+math.pi
+        M2[1, i] = - B1[1, i]
+        M2[2, i] = B1[2, i]-math.pi
+    print(theta)
+    theta123456 = np.empty([6, 8], dtype=np.complex_)
+    theta123456 = [[theta[0, 0], theta[0, 0], theta[0, 1], theta[0, 1], theta[0, 2], theta[0, 2], theta[0, 3], theta[0, 3]],
+                   [theta[1, 0], theta[1, 0], theta[1, 1], theta[1, 1],
+                    theta[1, 2], theta[1, 2], theta[1, 3], theta[1, 3]],
+                   [theta[2, 0], theta[2, 0], theta[2, 1], theta[2, 1],
+                    theta[2, 2], theta[2, 2], theta[2, 3], theta[2, 3]],
+                   [B1[0, 0], M2[0, 0], B1[0, 1], M2[0, 1],
+                       B1[0, 2], M2[0, 2], B1[0, 3], M2[0, 3]],
+                   [[B1[1, 0], M2[1, 0], B1[1, 1], M2[1, 1],
+                       B1[1, 2], M2[1, 2], B1[1, 3], M2[1, 3]]],
+                   [B1[2, 0], M2[2, 0], B1[2, 1], M2[2, 1], B1[2, 2], M2[2, 2], B1[2, 3], M2[2, 3]]]
 
     # for testing
 ik(130, 100, 140)
